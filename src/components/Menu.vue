@@ -56,6 +56,23 @@ export default {
   name: "Menu",
   created () {
     let pin = this.$store.getters.user.is_transactioncode;
+
+    // this.$swal.fire({
+    //   title: 'Create Transaction Pin',
+    //   text: "You won't be able to perform any transaction without your transaction pin",
+    //   type: "info",
+    //   showCancelButton: true,
+    //   confirmButtonColor: '#3085d6',
+    //   cancelButtonColor: '#d33',
+    //   allowOutsideClick: false,
+    //   width: "300px",
+    //   confirmButtonText: 'Create'
+    // }).then((result) => {
+    //   if (result.value) {
+    //     this.$router.push({ name: 'updatePin' })
+    //   }
+    // })
+
     if (!pin) {
       this.$toasted.info(
         "Please Update your Transaction Pin",

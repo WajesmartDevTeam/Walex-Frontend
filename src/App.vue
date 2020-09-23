@@ -21,6 +21,7 @@ body {
 }
 #app {
   text-align: center;
+  height: 100%;
 }
 #nav {
   padding: 30px;
@@ -33,5 +34,10 @@ body {
 
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+#box {
+  background-image: url("assets/images/profile_bg.png");
+  background-position: 50% 100%;
+  background-size: cover;
 }
 </style>

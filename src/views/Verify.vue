@@ -16,7 +16,7 @@
           </h1>
 
           <button
-            v-on:click.preventSubmit="verify"
+            v-on:click.prevent="verify"
             class="btn-success"
           >
             Login
@@ -58,7 +58,7 @@ export default {
         html: html,
         showConfirmButton: false,
         showCancelButton: false,
-        width: "400px",
+        width: "350px",
         allowOutsideClick: false
       });
       var req = {
@@ -66,7 +66,7 @@ export default {
         data: this.key,
         useToken: false
       };
-
+      let that = this;
       this.$request
         .makePostRequest(req)
         .then(response => {
@@ -77,7 +77,7 @@ export default {
               type: "success"
             })
             .then(function () {
-              this.$router.push("Login");
+              that.$router.push({ path: '/' })
             });
         })
         .catch(error => {
@@ -99,7 +99,7 @@ export default {
   display: -ms-flexbox;
   display: flex;
   width: 67%;
-  height: 400px;
+  height: 350px;
   margin-top: 4%;
   -webkit-box-orient: horizontal;
   -webkit-box-direction: normal;

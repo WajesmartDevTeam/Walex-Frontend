@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="box">
     <TopNav></TopNav>
 
     <div class="app-content content">
@@ -27,6 +27,11 @@
                     :href="'offerSet/' +service.title"
                     class="d-flex justify-content-between"
                   >
+                    <img
+                      style="width:50px; height:50px; margin-left:20px;"
+                      :src="service.logo"
+                      alt="logo"
+                    >
                     <p>{{service.description}}</p>
                     <span>View Merchant</span>
                   </a>
@@ -151,6 +156,9 @@ export default {
   color: #666;
   font-size: 20px;
   list-style-type: none;
+}
+.btn .dropdown li:hover {
+  background: rgb(242, 243, 248);
 }
 .btn .dropdown li.active {
   color: #049950;

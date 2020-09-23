@@ -3,7 +3,7 @@
     <div class=" row">
       <div class="div-block-175 col-12 text-center">
         <h1 class="heading-98 text-success">
-          © Waje Smart Solutions, 2019.<a href="http://uconixstudio.com/"></a>
+          © Waje Smart Solutions, 2020.<a href="http://uconixstudio.com/"></a>
         </h1>
       </div>
     </div>

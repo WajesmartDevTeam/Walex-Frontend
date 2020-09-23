@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="box">
     <TopNav></TopNav>
 
     <div class="app-content content">
@@ -46,7 +46,7 @@ export default {
       "Hello, " + this.$store.getters.user.first_name + " Welcome to WALEXX"
     );
 
-  }
+  },
 };
 </script>
 

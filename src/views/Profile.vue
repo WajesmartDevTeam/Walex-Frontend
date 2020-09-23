@@ -49,8 +49,8 @@
                   </div>
                   <hr />
                   <p class="text-left">
-                    <i class="fa fa-user"></i> {{ results.first_name }}
-                    {{ results.last_name }}
+                    <i class="fa fa-user"></i> {{capitalize( results.first_name) }}
+                    {{ capitalize(results.last_name) }}
                   </p>
                   <hr />
                   <p class="text-left">
@@ -73,21 +73,41 @@
             >
               <div class="card rounded">
                 <div class="card-header">
-                  My e-Wallet
+                  My e-Wallet <i class="fa fa-wallet"></i>
                 </div>
-                <div class="card-body">
+                <div
+                  class="card-body"
+                  style=""
+                >
                   <div class="d-flex justify-content-between">
                     <div>
-                      <h2>&#8358;{{ user.total.toLocaleString() }}</h2>
-                      Balance
+                      <h1 class="title">&#8358;{{ formatPrice(user.total)  }}</h1>
+                      <small class="text-success sub-title">Total Value Of Points Earned</small>
+                    </div>
+
+                    <div>
+                      <h1 class="title">{{ user.loyalty_count }}</h1>
+                      <small class="text-success sub-title">My Loyalty Programs</small>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="card rounded">
+
+                <div
+                  class="card-body"
+                  style=""
+                >
+                  <div class="d-flex justify-content-between">
+
+                    <div>
+                      <h1 class="title">{{ user.points }}</h1>
+                      <small class="text-success sub-title">Points Earned Shopping</small>
                     </div>
                     <div>
-                      <h2>&#8358;{{ user.extra }}</h2>
-                      Extra
-                    </div>
-                    <div>
-                      <h2>{{ user.loyalty_count }}</h2>
-                      Merchants
+                      <h1 class="title">{{ user.extra}}</h1>
+                      <small class="text-success sub-title">Points Earned Via Transfer</small>
                     </div>
                   </div>
                 </div>
@@ -95,33 +115,22 @@
 
               <div class="card rounded">
                 <div class="card-header">
-                  My Recent Activities
+                  Profile Management <i class="fa fa-cog"></i>
                 </div>
                 <div class="card-body table-responsive">
-                  <table class="table table-sm">
-                    <thead>
-                      <tr>
-                        <th
-                          class="border-0"
-                          scope="col"
-                        >Action</th>
-                        <th
-                          class="border-0"
-                          scope="col"
-                        >Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(item, index) in user_log"
-                        v-bind:key="index"
-                      >
-                        <td class="text-left">{{item.description }}</td>
-                        <td class="text-left">{{item.created_at}}</td>
-                      </tr>
+                  <p
+                    data-toggle="modal"
+                    data-target="#editModal"
+                    class="text-left edit"
+                  > Edit Profile</p>
+                  <hr />
+                  <!-- <p class="text-left"> Change Password</p> -->
+                  <!-- <hr /> -->
+                  <p class="text-left"> <a
+                      href="/updatePin"
+                      class="edit text-dark"
+                    >Change Transaction Pin</a> </p>
 
-                    </tbody>
-                  </table>
                 </div>
               </div>
             </div>
@@ -252,15 +261,19 @@ export default {
       this.results.first_name.charAt(0).toUpperCase() +
       "" +
       this.results.last_name.charAt(0).toUpperCase();
+    this.results.phone = this.results.phone.replace('234', '0');
     let user = this.$store.getters.profile;
     let total_point = 0;
+    let points = 0;
     user.memberships.forEach(member => {
       total_point += parseInt(member.points * member.rate);
+      points += parseInt(member.points);
     });
-    this.user.total = total_point.toLocaleString();
+    this.user.total = (total_point + parseInt(user.extra_points)).toLocaleString();
     this.user.loyalty_count = user.memberships.length;
+    this.user.points = points;
     this.user.extra = parseInt(user.extra_points).toLocaleString();
-    this.getLogs();
+
   },
   methods: {
     updateUser () {
@@ -272,24 +285,47 @@ export default {
         html: html,
         showConfirmButton: false,
         showCancelButton: false,
-        width: "400px",
+        width: "350px",
         allowOutsideClick: false
       });
 
       var req = {
         what: "updateUser",
         id: this.results.id,
+
         data: {
           first_name: this.update.first_name,
           last_name: this.update.last_name
         }
       };
 
+      // console.log(req)
       this.$request
         .editItem(req)
         .then(response => {
+          this.$store.dispatch("updateUsername", req.data);
           console.log(response);
-          this.$swal.fire("Success", response, "success");
+          this.$swal.fire({
+            title: 'Success!',
+            html: response.data.message,
+            type: "success",
+            timer: 8000,
+            onBeforeOpen: () => {
+              this.$swal.showLoading()
+            },
+            onClose: () => {
+              clearInterval(setInterval(() => {
+                const content = this.$swal.getContent()
+                if (content) {
+                  const b = content.querySelector('b')
+                  if (b) {
+                    b.textContent = this.$swal.getTimerLeft()
+                  }
+                }
+              }, 100))
+            }
+          })
+          this.$router.go()
         })
         .catch(error => {
           //reject(error);
@@ -297,81 +333,22 @@ export default {
           this.$swal.fire("Error", "error", "error");
         });
     },
-    getLogs () {
-      var req = {
-        what: "user_log",
-        params: {
-          user_id: this.results.id
-        }
-      };
-      this.$request
-        .makeGetRequest(req)
-        .then(response => {
-          response.data.data.forEach(i => {
-            var d = new Date(i.created_at);
-            var n = d.toUTCString();
-            i.created_at = this.timeSince(new Date(n));
-          })
-          this.user_log = response.data.data
-        })
-        .catch(error => {
-          this.$swal.fire("Error", error.message, "error");
-        });
+    capitalize: function (value) {
+      if (!value) return "";
+      value = value.toString();
+      return value.charAt(0).toUpperCase() + value.slice(1);
     },
-    timeSince (time) {
+    formatPrice (price) {
+      var str = price.toString().split(".");
+      if (str[0].length >= 3) {
+        str[0] = str[0].replace(/(\d)(?=(\d{3})+$)/g, "$1,");
+      }
+      // if (!str[1]) {
+      //   str[1] = "00";
+      // }
+      return str.join(".");
+    },
 
-      switch (typeof time) {
-        case 'number':
-          break;
-        case 'string':
-          time = +new Date(time);
-          break;
-        case 'object':
-          if (time.constructor === Date) time = time.getTime();
-          break;
-        default:
-          time = +new Date();
-      }
-      var time_formats = [
-        [60, 'seconds', 1], // 60
-        [120, '1 minute ago', '1 minute from now'], // 60*2
-        [3600, 'minutes', 60], // 60*60, 60
-        [7200, '1 hour ago', '1 hour from now'], // 60*60*2
-        [86400, 'hours', 3600], // 60*60*24, 60*60
-        [172800, 'Yesterday', 'Tomorrow'], // 60*60*24*2
-        [604800, 'days', 86400], // 60*60*24*7, 60*60*24
-        [1209600, 'Last week', 'Next week'], // 60*60*24*7*4*2
-        [2419200, 'weeks', 604800], // 60*60*24*7*4, 60*60*24*7
-        [4838400, 'Last month', 'Next month'], // 60*60*24*7*4*2
-        [29030400, 'months', 2419200], // 60*60*24*7*4*12, 60*60*24*7*4
-        [58060800, 'Last year', 'Next year'], // 60*60*24*7*4*12*2
-        [2903040000, 'years', 29030400], // 60*60*24*7*4*12*100, 60*60*24*7*4*12
-        [5806080000, 'Last century', 'Next century'], // 60*60*24*7*4*12*100*2
-        [58060800000, 'centuries', 2903040000] // 60*60*24*7*4*12*100*20, 60*60*24*7*4*12*100
-      ];
-      var seconds = (+new Date() - time) / 1000,
-        token = 'ago',
-        list_choice = 1;
-
-      if (seconds == 0) {
-        return 'Just now'
-      }
-      if (seconds < 0) {
-        seconds = Math.abs(seconds);
-        token = 'from now';
-        list_choice = 2;
-      }
-      var i = 0,
-        format;
-      while (format = time_formats[i++])
-        if (seconds < format[0]) {
-          if (typeof format[2] == 'string')
-            return format[list_choice];
-          else
-            return Math.floor(seconds / format[2]) + ' ' + format[1] + ' ' + token;
-        }
-      return time;
-    }
   }
 };
 </script>
@@ -491,9 +468,14 @@ i {
   transform: scale(1.75);
   opacity: 0;
 }
-#box {
-  background-image: url("../assets/images/profile_bg.png");
-  background-position: 50% 100%;
-  background-size: cover;
+.sub-title {
+  font-size: 15px;
+}
+.edit:hover {
+  color: #06aa46;
+}
+a.edit:hover {
+  background: #06aa46;
+  color: #fff;
 }
 </style>

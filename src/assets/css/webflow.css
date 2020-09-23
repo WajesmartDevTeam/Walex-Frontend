@@ -6508,13 +6508,25 @@ textarea.w-select {
     box-shadow: 0 0 50px -5px rgba(0, 0, 0, 0.11);
 }
 
+@media (min-width: 1025px) {
+    .div-block-107 {
+        width: 50%;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .div-block-107 {
+        width: 60%;
+    }
+}
+
 .div-block-107-copy {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     width: 90%;
-    height: 560px;
-    margin-top: 7%;
+    height: 585px;
+    margin-top: 5%;
     -webkit-box-orient: horizontal;
     -webkit-box-direction: normal;
     -ms-flex-direction: row;
@@ -13068,7 +13080,7 @@ textarea.w-select {
         margin-top: 20%;
     }
     .div-block-108 {
-        width: 70%;
+        width: 75%;
         padding-left: 0px;
     }
     /* .div-block-107-copy {

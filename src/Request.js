@@ -54,7 +54,6 @@ export default {
             Vue.prototype.$socket.emit("makeGetRequest", request);
             Vue.prototype.$socket.once("makeGetRequestResponse", response => {
                 Vue.prototype.$swal.close();
-                // console.log(response)
                 if (response.status == "true") {
                     // console.log(response);
                     resolve(response);
@@ -113,6 +112,7 @@ export default {
             "%cSending put request: ",
             "color:#fff;font-size:14px;background:#00ff00;"
         );
+        console.log(request)
 
         return new Promise((resolve, reject) => {
             if (request.useToken || request.useToken == undefined) {

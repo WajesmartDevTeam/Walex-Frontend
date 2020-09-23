@@ -32,7 +32,7 @@
               <div class="card">
                 <div class="card-body bg-transparent">
                   <ul class="list-unstyled">
-                    <li class="media p-2">
+                    <!-- <li class="media p-2">
                       <div class="media-body">
                         <h5 class="mt-0 mb-1">List-based media object</h5>
                         Cras sit amet nibh libero, in gravida nulla. Nulla vel
@@ -52,13 +52,16 @@
                         Cras sit amet nibh libero, in gravida nulla. Nulla vel
                         metus scelerisque ante sollicitudin. Cras purus odio.
                       </div>
-                    </li>
+                    </li> -->
                   </ul>
                 </div>
               </div>
             </div>
           </li>
-          <li class="nav-item">
+          <li
+            class="nav-item"
+            title="My Profile"
+          >
             <a
               class="nav-link"
               href="/profile"
@@ -124,7 +127,7 @@ nav .navbar-brand {
   width: 42px;
   background: #f7f7f7;
   /* margin: 10px auto; */
-  padding: 7px 0px;
+  padding: 6px 0px;
 }
 #prof-img h4 {
   /* font-size: 4em; */

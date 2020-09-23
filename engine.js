@@ -19,14 +19,14 @@ var http = require("http");
 var server = http.Server(app);
 
 //Listen on port 3300
-server.listen(3300, function() {
+server.listen(3800, function() {
     console.log("Listening on *:3300");
 });
 
 //Instantiate socket.io
 var io = require("socket.io").listen(server);
 
-const URL = "http://199.192.22.132/";
+const URL = "http://199.192.22.132/API/";
 
 //Configuration
 const script_config = {
@@ -61,7 +61,8 @@ io.on("connection", function(socket) {
             profile: "profile/",
             services: "service",
             vouchers: "giftcard",
-            user_log: "useractivities"
+            user_log: "useractivities",
+            getPoints: "getpoints"
         };
         if (request.params !== undefined) {
             var obj = request.params;
@@ -88,6 +89,7 @@ io.on("connection", function(socket) {
         axios
             .get(request_url, config)
             .then(response => {
+                console.log(response)
                 if (response.data.status == "true" || response.data.status) {
                     var response = {
                         data: response.data,
@@ -95,11 +97,12 @@ io.on("connection", function(socket) {
                         status: "true"
                     };
 
-                    logger(response.data, 2);
+                    logger(response.data, 1);
 
                     socket.emit("makeGetRequestResponse", response);
                 } else {
-                    socket.emit("makeGetRequestResponse", response.message);
+
+                    socket.emit("makeGetRequestResponse", response.data.message);
                 }
             })
             .catch(err => {
@@ -112,7 +115,8 @@ io.on("connection", function(socket) {
         var request_urls = {
             signup: "customerregistration/",
             logout: "auth/logout/",
-            reset: "auth/reset/",
+            reset: "passwordreset/",
+            confirmPassword: "confirmpassword/",
             verify: "emailverification/",
             membership: "membership/",
             transfer: "transferpoints/",
@@ -161,8 +165,8 @@ io.on("connection", function(socket) {
             pin: "user/",
         };
 
-        var request_url = URL + request_urls[request.what.toLowerCase()];
-
+        var request_url = URL + request_urls[request.what];
+        console.log(request_url)
         request_url += request.id == undefined ? "" : "" + request.id + "/";
 
         var config = {

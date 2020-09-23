@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="box">
     <TopNav></TopNav>
 
     <div class="app-content content">
@@ -10,7 +10,7 @@
         <!-- END: Main Menu-->
         <div class="content-body w-100 h-100">
           <div class="content-header  text-left">
-            <h2 class="ml-2">{{merchant.name}}<sub>({{vouchers.length}})</sub></h2>
+            <h2 class="ml-2">{{merchant.name}}</h2>
             <!-- <h5 class="ml-2 text-success">Gift Vouchers</h5> -->
           </div>
           <br />
@@ -40,7 +40,7 @@
               />
               <div class="box-content">
                 <a
-                  @click="selected = item"
+                  @click="picked = item"
                   class="buy"
                   href="javascript:void(0)"
                   data-toggle="modal"
@@ -48,7 +48,10 @@
                 ><span><i class="fa fa-gift"></i></span></a>
                 <div class="gift-title ">{{item.cardname}}</div>
 
-                <span class="price mb-3">&#8358;{{item.amount}}</span>
+                <span
+                  v-if="item.amount"
+                  class="price mb-3"
+                >&#8358;{{formatPrice(item.amount)}}</span>
               </div>
             </div>
 
@@ -78,7 +81,7 @@
               class="modal-title"
               id="exampleModalLabel"
             >
-              {{selected.cardname}} Gift Card
+              {{picked.cardname}} Gift Card
             </h5>
             <button
               type="button"
@@ -103,7 +106,7 @@
                         class="form-control"
                         id="inputEmail3"
                         required
-                        v-model="selected.recipent_email"
+                        v-model="picked.recipent_email"
                       />
                     </div>
                   </div>
@@ -117,7 +120,7 @@
                       <input
                         type="text"
                         class="form-control"
-                        v-model="selected.recipent_phone"
+                        v-model="picked.recipent_phone"
                         required
                       />
                     </div>
@@ -131,7 +134,7 @@
                       <input
                         type="text"
                         class="form-control"
-                        v-model="selected.giftername"
+                        v-model="picked.giftername"
                       />
                     </div>
                   </div>
@@ -144,7 +147,7 @@
                       <input
                         type="email"
                         class="form-control"
-                        v-model="selected.gifteremail"
+                        v-model="picked.gifteremail"
                         required
                       />
                     </div>
@@ -176,7 +179,7 @@
                         class="form-control"
                       >
                         <option
-                          selected
+                          picked
                           value=""
                         >select option...</option>
                         <option value="">Via Email</option>
@@ -199,9 +202,12 @@
                         data-toggle="modal"
                         data-target=".bd-example-modal-lg"
                       ><span><i class="fa fa-gift"></i></span></a>
-                      <div class="gift-title ">{{selected.cardname}}</div>
+                      <div class="gift-title ">{{picked.cardname}}</div>
 
-                      <span class="price mb-3">&#8358;{{selected.amount}}</span>
+                      <span
+                        v-if="picked.amount"
+                        class="price mb-3"
+                      >&#8358;{{formatPrice(picked.amount)}}</span>
                     </div>
                   </div>
 
@@ -231,11 +237,11 @@
                   >Description</label>
                   <div class="col-sm-10">
                     <textarea
-                      name=""
+                      name="description"
                       rows="5"
                       class="form-control"
-                      v-model="selected.description"
-                    ></textarea>
+                      v-model="picked.description"
+                    >Enter description here</textarea>
                   </div>
                 </div>
               </div>
@@ -260,6 +266,7 @@
 import TopNav from "@/components/TopNav.vue";
 import Menu from "@/components/Menu.vue";
 import Bottom from "@/components/Bottom.vue";
+import Vue from 'vue'
 export default {
   name: "OfferSet",
   components: {
@@ -285,11 +292,10 @@ export default {
       vouchers: [],
       all_vouchers: [],
       services: [],
-      selected: {
-        description: "",
+      picked: {
+        description: ""
       },
       credentials: {
-
         giftcards: [],
         service: "",
         reference: "",
@@ -306,12 +312,12 @@ export default {
     document.getElementsByTagName("head")[0].appendChild(script);
   },
   mounted () {
-    this.credentials.user_id = this.$store.getters.user.id
+    this.credentials.user_id = this.$store.getters.user.id;
     this.key = {
       serviceid: this.$route.params.key
     };
     this.services = this.$store.getters.services;
-
+    this.quantity = document.getElementById('number').value
     this.getVouchers();
     this.displayImage();
   },
@@ -354,7 +360,7 @@ export default {
         html: html,
         showConfirmButton: false,
         showCancelButton: false,
-        width: "400px",
+        width: "350px",
         allowOutsideClick: false
       });
 
@@ -374,6 +380,7 @@ export default {
       this.$request
         .makeGetRequest(req)
         .then(response => {
+          console.log(response)
           var idiot = response.data.date
 
           const byName = this.groupBy(idiot.filter(it => it.cardname), it => it.cardname)
@@ -414,7 +421,7 @@ export default {
         })
         .catch(error => {
           console.log(error)
-          this.$swal.fire("Error", error.message, "error");
+          this.$swal.fire("Error", error, "error");
         });
     },
     groupBy (a, keyFunction) {
@@ -429,19 +436,42 @@ export default {
       return groups;
     },
     handlePayment () {
+
+      this.$swal.fire({
+        title: 'Are you sure?',
+        text: "Please confirm that all details are correct. ",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQFJHNuWnWWC4g86Hf34dWkFDPAFxmnLmQQJ67xeUvUAwGOCpjd",
+        imageWidth: 100,
+        imageHeight: 100,
+        showCancelButton: true,
+        confirmButtonColor: 'green',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes'
+      }).then((result) => {
+        if (result.value) {
+          this.pay()
+        }
+      })
+
+
+
+    },
+    pay () {
+
+      this.picked.description = (this.picked.description == undefined) ? "" : this.picked.description
       let all_array = [];
       let total = 0;
       this.all_vouchers.forEach(i => {
 
         i.forEach(j => {
-          if (j.cardname === this.selected.cardname && j.amount === this.selected.amount) {
+          if (j.cardname === this.picked.cardname && j.amount === this.picked.amount) {
             all_array.push(j);
           }
         })
       })
 
-      for (let q = 1; q <= this.quantity; q++) {
-
+      for (let q = 0; q <= this.quantity - 1; q++) {
+        // console.log(all_array[q])
         this.credentials.giftcards.push({
           serialnumber: all_array[q].serialnumber,
           cardname: all_array[q].cardname,
@@ -450,22 +480,20 @@ export default {
       }
 
       this.credentials.giftcards.forEach(i => {
-        i.recipent_email = this.selected.recipent_email;
-        i.recipent_phone = this.selected.recipent_phone;
-        i.gifteremail = this.selected.gifteremail;
-        i.giftername = this.selected.giftername;
-        i.description = this.selected.description;
+        i.recipent_email = this.picked.recipent_email;
+        i.recipent_phone = this.picked.recipent_phone;
+        i.gifteremail = this.picked.gifteremail;
+        i.giftername = this.picked.giftername;
+        i.description = this.picked.description;
         i.commission = "1000";
         total += i.amount;
       })
 
       this.credentials.service = this.key.serviceid;
       this.credentials.totalamount = total;
-
-
       window.getpaidSetup({
-        customer_email: this.selected.gifteremail,
-        amount: this.credentials.totalamount,
+        customer_email: this.picked.gifteremail,
+        amount: total,
         PBFPubKey: "FLWPUBK-a90716eafed1ab1c2fc490448bc76e62-X",
         onclose: () => this.onclose(),
         callback: response => this.callback(response),
@@ -475,10 +503,9 @@ export default {
         custom_logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQS7PXHKcQNMqPi4F1lWF5niCEFaQhq1pXPFjB1I1zriAz9BglF",
 
       });
-
-
     },
-    onclose () { },
+    onclose () {
+    },
     callback: function (response) {
 
 
@@ -488,11 +515,32 @@ export default {
       ) {
 
         this.credentials.reference = response.tx.txRef;
-        this.submitVoucher()
+        // console.log(this.credentials)
+        this.$swal.fire({
+          title: 'Success!',
+          html: response.data.message,
+          type: "success",
+          timer: 8000,
+          onBeforeOpen: () => {
+            this.$swal.showLoading()
+          },
+          onClose: () => {
+            clearInterval(setInterval(() => {
+              const content = this.$swal.getContent()
+              if (content) {
+                const b = content.querySelector('b')
+                if (b) {
+                  b.textContent = this.$swal.getTimerLeft()
+                }
+              }
+            }, 100))
+          }
+        })
+        this.submitVoucher();
       } else {
         this.$swal.fire("Error", "Transaction Failed, Please try again", "error");
       }
-
+      window.close();
 
     },
     submitVoucher () {
@@ -504,7 +552,7 @@ export default {
         html: html,
         showConfirmButton: false,
         showCancelButton: false,
-        width: "400px",
+        width: "350px",
         allowOutsideClick: false
       });
 
@@ -514,23 +562,57 @@ export default {
       };
 
       // console.log(this.credentials)
+
       this.$request
         .makePostRequest(req)
         .then(response => {
-          console.log(response.data);
-          this.$swal.fire("Success", response.data.message, "success");
-          this.$router.push({ path: '/voucher' })
+          alert(response.data.message)
+          // console.log(response.data.message)
+
+          Vue.prototype.$swal.fire({
+            title: 'Success!',
+            html: response.data.message,
+            type: "success",
+            timer: 8000,
+            onBeforeOpen: () => {
+              Vue.prototype.$swal.showLoading()
+            },
+            onClose: () => {
+              clearInterval(setInterval(() => {
+                const content = Vue.prototype.$swal.getContent()
+                if (content) {
+                  const b = content.querySelector('b')
+                  if (b) {
+                    b.textContent = Vue.prototype.$swal.getTimerLeft()
+                  }
+                }
+              }, 100))
+            }
+          })
+          setTimeout(this.$router.go(), 1000);
+
         })
         .catch(error => {
           console.log(error)
+          alert(error.message)
           this.$swal.fire("Error", error.message, "error");
           this.credentials.giftcards = [];
         });
     },
+    formatPrice (price) {
+      var str = price.toString().split(".");
+      if (str[0].length >= 3) {
+        str[0] = str[0].replace(/(\d)(?=(\d{3})+$)/g, "$1,");
+      }
+      // if (!str[1]) {
+      //   str[1] = "00";
+      // }
+      return str.join(".");
+    },
     increaseValue () {
-      var value = parseInt(document.getElementById('number').value, this.selected.quantity);
+      var value = parseInt(document.getElementById('number').value, this.picked.quantity);
       value = isNaN(value) ? 0 : value;
-      if (value < this.selected.quantity) {
+      if (value < this.picked.quantity) {
         value++;
         document.getElementById('number').removeAttribute("disabled", "")
       }
@@ -542,7 +624,7 @@ export default {
     },
     decreaseValue () {
       document.getElementById('number').removeAttribute("disabled", "")
-      var value = parseInt(document.getElementById('number').value, this.selected.quantity);
+      var value = parseInt(document.getElementById('number').value, this.picked.quantity);
       value = isNaN(value) ? 0 : value;
       value < 1 ? value = 1 : '';
       value--;
@@ -671,7 +753,7 @@ export default {
   box-shadow: 1px 2px 8px 3px rgb(192, 192, 192);
 }
 .box-content .buy span i {
-  padding: 11px;
+  padding: 20px;
 }
 .expanded .box-content .buy span {
   width: 750px;

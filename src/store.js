@@ -19,6 +19,10 @@ export default new Vuex.Store({
         updateUser(state, user) {
             state.user = user
         },
+        updateUsername(state, user) {
+            state.user.first_name = user.first_name;
+            state.user.last_name = user.last_name;
+        },
 
         updateToken(state, token) {
             // console.log(token);
@@ -121,6 +125,9 @@ export default new Vuex.Store({
                         // console.log(error)
                     });
             });
+        },
+        updateUsername({ commit }, credentials) {
+            commit("updateUsername", credentials);
         },
         logout({ commit }, credentials) {
             let req = {

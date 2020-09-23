@@ -3,6 +3,7 @@ import Router from "vue-router";
 import Login from "./views/Login.vue";
 import Register from "./views/Register.vue";
 import Verify from "./views/Verify.vue";
+import Reset from "./views/Reset.vue";
 import Dashboard from "./views/Dashboard.vue";
 import Redeem from "./views/Redeem.vue";
 import Transfer from "./views/Transfer.vue";
@@ -43,6 +44,15 @@ export default new Router({
             meta: {
                 public: true, // Allow access to even if not logged in
                 onlyWhenLoggedOut: true
+            }
+        },
+        {
+            path: "/reset/:uid/:token",
+            name: "reset",
+            component: Reset,
+            meta: {
+                public: true, // Allow access to even if not logged in
+                // onlyWhenLoggedOut: true
             }
         },
         {

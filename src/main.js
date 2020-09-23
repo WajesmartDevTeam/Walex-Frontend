@@ -13,9 +13,8 @@ import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 import InfiniteLoading from "vue-infinite-loading";
 import VeeValidate from "vee-validate";
-Vue.use(VeeValidate, {
-    events: 'change|blur|custom'
-});
+import VueCarousel from 'vue-carousel';
+
 VeeValidate.Validator.extend("verify_password", {
     getMessage: field => ``,
     validate: value => {
@@ -34,9 +33,13 @@ VeeValidate.Validator.extend("verify_number", {
 Vue.use(ClientTable);
 Vue.use(VueAxios, axios);
 Vue.use(InfiniteLoading);
+Vue.use(VueCarousel);
+Vue.use(VeeValidate, {
+    events: 'change|blur|custom'
+});
 Vue.component("v-select", vSelect);
-var socket = io("localhost:3300");
-
+// var socket = io("http://199.192.22.132:3300");
+var socket = io("localhost:3800");
 Vue.prototype.$socket = socket;
 Vue.prototype.$request = Request;
 Vue.prototype.$swal = swal;
@@ -72,29 +75,29 @@ Vue.use(Toasted, {
 // import "../src/assets/js/webflow.js";
 Vue.config.productionTip = false;
 
-// router.beforeEach((to, from, next) => {
-//     const isPublic = to.matched.some(record => record.meta.public);
-//     const onlyWhenLoggedOut = to.matched.some(
-//         record => record.meta.onlyWhenLoggedOut
-//     );
-//     const loggedIn = store.getters.isLoggedIn;
-//     if (!isPublic && !loggedIn) {
-//         return next({
-//             path: "/login",
-//             query: { redirect: to.fullPath } // Store the full path to redirect the user to after login
-//         });
-//     }
+router.beforeEach((to, from, next) => {
+    const isPublic = to.matched.some(record => record.meta.public);
+    const onlyWhenLoggedOut = to.matched.some(
+        record => record.meta.onlyWhenLoggedOut
+    );
+    const loggedIn = store.getters.isLoggedIn;
+    if (!isPublic && !loggedIn) {
+        return next({
+            path: "/login",
+            query: { redirect: to.fullPath } // Store the full path to redirect the user to after login
+        });
+    }
 
-//     // Do not allow user to visit login page or register page if they are logged in
-//     if (loggedIn && onlyWhenLoggedOut) {
-//         if (isPublic) {
-//             return next("/dashboard");
-//         }
-//         return next("/");
-//     }
+    // Do not allow user to visit login page or register page if they are logged in
+    if (loggedIn && onlyWhenLoggedOut) {
+        if (isPublic) {
+            return next("/dashboard");
+        }
+        return next("/");
+    }
 
-//     next();
-// });
+    next();
+});
 
 new Vue({
     router,

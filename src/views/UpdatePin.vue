@@ -1,28 +1,31 @@
 /* eslint-disable prettier/prettier */
 <template>
   <div>
-    <img
-      src="../assets/images/logo.png"
-      alt="WALEXX"
-    />
+    <a href="/dashboard">
+      <img
+        src="../assets/images/logo.png"
+        alt="WALEXX"
+      />
+    </a>
     <div class="section-20">
       <div class="div-block-107-copy ">
         <div class="div-block-108-copy">
           <h3 class="mb-5">
-            Update Transaction Pin
+            Create Transaction Pin
           </h3>
           <h1 class="heading-51">
-            To Perform any Transaction, You have to update your transaction Pin.
+            To Perform any Transaction, You have to create your transaction Pin.
           </h1>
 
           <form v-on:submit.prevent="updatePin">
             <input
               type="text"
-              placeholder="Enter your pin"
+              placeholder="Enter your pin *(Four digits only)"
               name="phone"
               id="phone"
               class="inputboxesHome"
               v-model="credentials.transactioncode"
+              required
             />
 
             <br />
@@ -34,6 +37,11 @@
             >
               Submit
             </button>
+            <a
+              type="button"
+              class="back-btn"
+              href="/dashboard"
+            >Back To Home</a>
           </form>
         </div>
       </div>
@@ -72,7 +80,7 @@ export default {
         html: html,
         showConfirmButton: false,
         showCancelButton: false,
-        width: "400px",
+        width: "350px",
         allowOutsideClick: false
       });
 
@@ -80,7 +88,6 @@ export default {
       this.$store
         .dispatch("updatePin", this.credentials)
         .then(response => {
-          console.log(response)
           this.$swal
             .fire("Success", response, "success")
             .then(() => {
@@ -115,7 +122,7 @@ export default {
   display: -ms-flexbox;
   display: flex;
   width: 67%;
-  height: 400px;
+  height: 350px;
   margin-top: 4%;
   -webkit-box-orient: horizontal;
   -webkit-box-direction: normal;
@@ -202,7 +209,8 @@ label {
   font-family: Quicksand;
 }
 
-#submitButton {
+#submitButton,
+.back-btn {
   background-color: transparent;
   border: 2px solid #28a745;
   border-radius: 20px;
@@ -210,7 +218,8 @@ label {
   font-size: 16px;
   color: black;
 }
-#submitButton:hover {
+#submitButton:hover,
+.back-btn:hover {
   background-color: #28a745;
   color: #fff;
 }

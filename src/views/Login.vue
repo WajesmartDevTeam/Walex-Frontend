@@ -13,37 +13,60 @@
     <div class="section-20">
       <div class="div-block-107 ">
         <div class="div-block-108">
-          <h1 class="heading-51">
-            <span class="text-span-5">Login </span>with your unique ID.
+          <h1 class="heading-51 text-center">
+            <span class="text-span-5">Login </span>with your unique ID. <br>
+            <small>(mobile number)</small>
           </h1>
-          <div class="html-embed-3 w-embed">
+
+          <div class="html-embed-3 w-embed ">
             <form
               style="width: 100%;"
               v-on:submit.prevent="login"
             >
-              <input
-                type="text"
-                placeholder="Enter your unique ID"
-                name="phone"
-                id="phone"
-                class="inputboxesHome"
-                v-model="credentials.username"
-              />
-              <!-- <input
-                type="email"
-                placeholder="Enter your email address"
-                name="loginemail"
-                id="loginemail"
-                class="inputboxesHome"
-              /> -->
-              <input
-                type="password"
-                placeholder="Enter your password"
-                name="psw"
-                id="psw"
-                class="inputboxesHome"
-                v-model="credentials.password"
-              />
+              <div class="d-flex inputboxesHome">
+                <select
+                  style="width:32%"
+                  v-model="country_code"
+                  class="inputboxesHome"
+                >
+                  <option
+                    v-for="(country,index) in countries"
+                    v-bind:key="index"
+                    :title="country.name"
+                  >{{
+                        country.dial_code
+                      }}</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Enter your unique ID (e.g 080xxxxxxxxxx)"
+                  name="phone"
+                  id="phone"
+                  class="inputboxesHome"
+                  v-model="credentials.username"
+                  v-validate="'required|length:11|numeric'"
+                  data-vv-as="Unique id"
+                  required
+                />
+              </div>
+              <p
+                class="text-danger err"
+                v-if="errors.has('phone')"
+              >*{{errors.first('phone')}}</p>
+              <div>
+                <input
+                  type="password"
+                  placeholder="Enter your password"
+                  name="psw"
+                  id="psw"
+                  class="inputboxesHome"
+                  v-model="credentials.password"
+                  v-validate="'required'"
+                  data-vv-as="password"
+                  required
+                />
+              </div>
+
               <br />
               <a
                 href="#"
@@ -54,10 +77,9 @@
                 Forgot Password?
               </a>
               <br />
-              <br />
               <a
                 href="register"
-                class="register"
+                class=" float-left register"
               >
                 New to Loyalty system? Sign up here
               </a>
@@ -78,7 +100,7 @@
     <div class="footer row">
       <div class="div-block-175 col-12 text-center">
         <h1 class="heading-98 text-success">
-          © Wajesmart solutions, 2019.<a href="http://uconixstudio.com/"></a>
+          © Waje Smart Solutions, 2020.<a href="http://uconixstudio.com/"></a>
         </h1>
       </div>
     </div>
@@ -124,16 +146,15 @@
                   required
                 />
               </div>
+              <button
+                type="submit"
+                class="btn btn-success"
+              >
+                Send
+              </button>
             </form>
           </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-success"
-            >
-              Send
-            </button>
-          </div>
+
         </div>
       </div>
     </div>
@@ -141,10 +162,13 @@
 </template>
 
 <script>
+import Countries from "../countries";
 export default {
   name: "Login",
   data () {
     return {
+      countries: Countries.countries,
+      country_code: "+234",
       email: "",
       credentials: {
         username: "",
@@ -164,13 +188,15 @@ export default {
         html: html,
         showConfirmButton: false,
         showCancelButton: false,
-        width: "400px",
+        width: "350px",
         allowOutsideClick: false
       });
-      if (this.credentials.username.charAt(0) == "+") {
-        this.credentials.username = this.credentials.username.slice(1);
+
+      if (this.credentials.username[0] == '0') {
+        this.credentials.username = this.credentials.username.substring(1)
       }
-      //console.log(this.credentials.username)
+      this.credentials.username = this.country_code.substring(1) + "" + this.credentials.username;
+      // console.log(this.credentials.username)
       this.$store
         .dispatch("login", this.credentials)
         .then(response => {
@@ -182,22 +208,46 @@ export default {
             //     _this.$router.push({ name: "dashboard" });
             //   });
             var html = '<img src="https://thumbs.gfycat.com/InfamousJollyArrowcrab-size_restricted.gif"/>'
+            // this.$swal.fire({
+            //   title: 'Welcome To WALEXX',
+            //   html: html,
+            //   showConfirmButton: false,
+            //   showCancelButton: false,
+            //   timer: 3000,
+            //   onClose: () => {
+            //     var _this = this;
+            //     _this.$router.push({ name: "dashboard" });
+            //   }
+            // });
+
             this.$swal.fire({
               title: 'Welcome To WALEXX',
               html: html,
-              showConfirmButton: false,
-              showCancelButton: false,
-              timer: 3000,
+              type: "success",
+              timer: 5000,
+              onBeforeOpen: () => {
+                this.$swal.showLoading()
+              },
               onClose: () => {
+                clearInterval(setInterval(() => {
+                  const content = this.$swal.getContent()
+                  if (content) {
+                    const b = content.querySelector('b')
+                    if (b) {
+                      b.textContent = this.$swal.getTimerLeft()
+                    }
+                  }
+                }, 100));
                 var _this = this;
                 _this.$router.push({ name: "dashboard" });
               }
-            });
+            })
           }
         })
         .catch(error => {
           console.log(error)
-          this.$swal.fire("Error", error.message, "error");
+          this.$swal.fire("Error", error, "error");
+          this.credentials.username = "";
         });
     },
     reset: function () {
@@ -208,19 +258,41 @@ export default {
         html: html,
         showConfirmButton: false,
         showCancelButton: false,
-        width: "400px",
+        width: "350px",
         allowOutsideClick: false
       });
       var req = {
         what: "reset",
-        data: this.email
+        useToken: false,
+        data: {
+          email: this.email
+        }
       };
-
+      console.log(req)
       this.$request
         .makePostRequest(req)
         .then(response => {
           console.log(response);
-          this.$swal.fire("Success", response, "success");
+          this.$swal.fire({
+            title: 'Success!',
+            html: "Please check your mail box for your password reset link.",
+            type: "success",
+            timer: 8000,
+            onBeforeOpen: () => {
+              this.$swal.showLoading()
+            },
+            onClose: () => {
+              clearInterval(setInterval(() => {
+                const content = this.$swal.getContent()
+                if (content) {
+                  const b = content.querySelector('b')
+                  if (b) {
+                    b.textContent = this.$swal.getTimerLeft()
+                  }
+                }
+              }, 100))
+            }
+          })
         })
         .catch(error => {
           //reject(error);
@@ -250,7 +322,7 @@ label {
   margin: auto;
 }
 .inputboxesHome {
-  width: 350px;
+  width: 100%;
   border-left: none;
   border-right: none;
   border-top: none;
@@ -307,5 +379,10 @@ label {
   .inputboxesHome {
     width: 190px;
   }
+}
+.err {
+  font-size: 10px;
+  margin-top: -22px;
+  /* margin-left: 35%; */
 }
 </style>

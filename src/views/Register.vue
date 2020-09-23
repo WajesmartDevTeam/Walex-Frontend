@@ -12,9 +12,12 @@
 
     <div class="section-20">
       <div class="div-block-107-copy ">
-        <div class="div-block-108-copy">
+        <div
+          v-if="signup"
+          class="div-block-108-copy"
+        >
           <h1 class="heading-51 mb-3">
-            <span class="text-span-5">Signup </span>here.
+            <span class="text-span-5">Sign-up </span>here.
           </h1>
           <div class="formbox-copy ">
             <div class="html-embed-3 w-embed">
@@ -50,7 +53,7 @@
                 </div>
 
                 <div class="d-flex">
-                  <label>Email:</label> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  <label>Email:</label>
                   <input
                     type="email"
                     placeholder=""
@@ -62,14 +65,21 @@
                   />
                 </div>
                 <div class="d-flex justify-content-around">
-                  <label>Phone No:</label>&nbsp;&nbsp;&nbsp;
-                  <div class="">
+                  <label>Mobile No.:</label>&nbsp;&nbsp;&nbsp;
+                  <div
+                    class=""
+                    style="width: 13%;"
+                  >
                     <select
                       v-model="country_code"
                       class="inputboxes"
                     >
-                      <option v-for="country in countries">{{
-                        country.code
+                      <option
+                        v-for="(country,index) in countries"
+                        v-bind:key="index"
+                        :title="country.name"
+                      >{{
+                        country.dial_code
                       }}</option>
                     </select>
                   </div>
@@ -82,14 +92,23 @@
                     required
                     v-model="new_user.phone"
                   />
-                </div>
-                <span
-                  class="text-danger"
-                  v-if="errors.has('password')"
-                >
-                  {{ errors.first("password") }}
-                </span>
 
+                </div>
+                <p
+                  class="info d-flex"
+                  style="position:absolute; margin-left: 7%; margin-top: -30px;"
+                ><i class="fa fa-exclamation-circle"></i><i>Note that this will be your unique id</i></p>
+                <div class="d-flex">
+                  <label>Date Of Birth:</label>
+                  <input
+                    type="date"
+                    placeholder=""
+                    name="dob"
+                    id="dob"
+                    class="inputboxes"
+                    v-model="new_user.dob"
+                  />
+                </div>
                 <div class="d-flex">
                   <label>Password:</label>
                   <input
@@ -104,12 +123,13 @@
                     ref="password"
                   />
                 </div>
-                <span
-                  class="text-danger"
-                  v-if="errors.has('passwordConfirm')"
+                <p
+                  class="text-danger err"
+                  v-if="errors.has('password')"
                 >
-                  {{ errors.first("passwordConfirm") }}
-                </span>
+                  {{ errors.first("password") }}
+                </p>
+
                 <div class="d-flex">
                   <label>Confirm Password:</label>
                   <input
@@ -123,7 +143,12 @@
                     data-vv-as="password confirmation"
                   />
                 </div>
-
+                <p
+                  class="text-danger err"
+                  v-if="errors.has('passwordConfirm')"
+                >
+                  {{ errors.first("passwordConfirm") }}
+                </p>
                 <div class="d-flex">
                   <input
                     type="checkbox"
@@ -131,9 +156,14 @@
                     value="accepted"
                     required
                     v-validate="'required'"
-                  /><span id="iAgree">I agree to the WALEXX User Agreement and Privacy
-                    Policy</span>
+                  /><span id="iAgree">I agree to the WALEXX User Agreement and Privacy Policy</span>
                 </div>
+                <p
+                  class="text-danger err"
+                  v-if="errors.has('accepted')"
+                >
+                  You have to accept User Agreement and Privacy Policy before you proceed
+                </p>
                 <br />
                 <div class="row">
                   <button
@@ -152,6 +182,22 @@
                   </span>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-else
+          class="div-block-108-copy"
+        >
+          <h1 class="heading-51 mb-3">
+            <span class="text-span-5">Sign-up </span>complete.
+            <br> <br>
+            A Verification Link has been sent to your Email Address.
+          </h1>
+          <div class="formbox-copy ">
+            <div class="html-embed-3 w-embed">
+
             </div>
           </div>
         </div>
@@ -175,13 +221,15 @@ export default {
   data () {
     return {
       countries: Countries.countries,
-      country_code: "234",
+      country_code: "+234",
+      signup: true,
       new_user: {
         phone: "",
         email: "",
         password: "",
         first_name: "",
-        last_name: ""
+        last_name: "",
+        dob: ""
       }
     };
   },
@@ -196,7 +244,7 @@ export default {
         html: html,
         showConfirmButton: false,
         showCancelButton: false,
-        width: "400px",
+        width: "350px",
         allowOutsideClick: false
       });
       this.$validator.validateAll().then(res => {
@@ -208,6 +256,10 @@ export default {
       });
     },
     createUser: function () {
+      if (this.new_user.phone[0] == '0') {
+        this.new_user.phone = this.new_user.phone.substring(1)
+      }
+
       var html =
         '<img src="https://thumbs.gfycat.com/AchingSpeedyArmyworm-size_restricted.gif" />';
 
@@ -216,11 +268,11 @@ export default {
         html: html,
         showConfirmButton: false,
         showCancelButton: false,
-        width: "400px",
+        width: "350px",
         allowOutsideClick: false
       });
 
-      this.new_user.phone = this.country_code + "" + this.new_user.phone;
+      this.new_user.phone = this.country_code.substring(1) + "" + this.new_user.phone;
 
       var req = {
         what: "signup",
@@ -228,13 +280,16 @@ export default {
         useToken: false
       };
 
+
+
       this.$request
         .makePostRequest(req)
         .then(response => {
-          console.log(response);
+          // console.log(response);
           this.$swal.fire("Success", response.data.message, "success");
           var _this = this;
-          _this.$router.push({ name: "login" });
+          _this.signup = false;
+          // _this.$router.push({ name: "login" });
         })
         .catch(error => {
           console.log(error)
@@ -261,6 +316,7 @@ label {
   font-family: Quicksand;
   font-size: 13px;
   color: black;
+  width: 20%;
 }
 .login {
   font-size: 12px;
@@ -281,7 +337,11 @@ label {
   font-size: 12px;
   font-family: Quicksand;
 }
-
+.info,
+.info i {
+  color: red;
+  font-size: 9px;
+}
 #submitButton {
   background-color: transparent;
   border: 2px solid #28a745;
@@ -313,7 +373,7 @@ font-siz .register {
   border-top: none;
   border-bottom: 2px solid #eeeeee;
   /* padding-left: 15px; */
-  height: 30px;
+  height: 25px;
   margin: 0px 0px 30px 0px;
   float: left;
 }
@@ -386,5 +446,10 @@ input[type="checkbox"] {
   .inputboxes {
     width: 300px;
   }
+}
+.err {
+  font-size: 10px;
+  margin-top: -22px;
+  margin-left: 35%;
 }
 </style>
